@@ -1,6 +1,5 @@
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-import OnlyScroll from 'only-scrollbar';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import ImagesApi from './fetchImages.js';
 const refs = {
@@ -35,7 +34,6 @@ const renderPage = async () => {
       Notify.info("We're sorry, but you've reached the end of search results.");
     }
     images.hits.map(renderCard);
-    const scroll = new OnlyScroll(document.scrollingElement);
     return imagesApi.totalHits;
   } catch (error) {
     Notify.failure(error.message);
