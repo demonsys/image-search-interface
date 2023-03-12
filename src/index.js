@@ -6,9 +6,21 @@ const refs = {
   searchForm: document.querySelector('#search-form'),
   gallery: document.querySelector('.gallery'),
   searchQuery: document.querySelector('input[name="searchQuery"]'),
-  loadMore: document.querySelector('.load-more'),
+  endOfPage: document.querySelector('.endOfPage'),
 };
 const imagesApi = new ImagesApi();
+const observerCallback = entries => {
+  entries.forEach(entry => {
+    console.log('start');
+    if (entry.isIntersecting) renderPage();
+  });
+};
+const options = {
+  rootMargin: '0px 0px 75px 0px',
+  threshold: 0,
+};
+const observer = new IntersectionObserver(observerCallback, options);
+
 refs.searchForm.addEventListener('submit', onSearch);
 const renderPage = async () => {
   try {
@@ -22,15 +34,11 @@ const renderPage = async () => {
       Notify.info(`Hooray! We found ${imagesApi.totalHits} images.`);
     }
     if (imagesApi.totalHits > imagesApi.imagesPerPage) {
-      refs.loadMore.classList.remove('hidden');
-      refs.loadMore.addEventListener('click', renderMore);
     }
     if (
       imagesApi.totalHits <= imagesApi.page * imagesApi.imagesPerPage &&
       imagesApi.page !== 1
     ) {
-      refs.loadMore.classList.add('hidden');
-      refs.loadMore.removeEventListener('click', renderMore);
       Notify.info("We're sorry, but you've reached the end of search results.");
     }
     images.hits.map(renderCard);
@@ -44,24 +52,24 @@ function onSearch(e) {
   e.preventDefault();
   refs.gallery.innerHTML = '';
   imagesApi.resetPage();
-  refs.loadMore.classList.add('hidden');
   imagesApi.searchQuery = e.target.elements.searchQuery.value.trim();
   if (imagesApi.searchQuery === '') {
     return Notify.info('Please enter a search query');
   }
   renderPage();
+  observer.observe(refs.endOfPage);
 }
-async function renderMore() {
-  refs.loadMore.classList.add('hidden');
-  await renderPage();
-  const { height: cardHeight } = document
-    .querySelector('.gallery')
-    .firstElementChild.getBoundingClientRect();
-  window.scrollBy({
-    top: cardHeight * 2,
-    behavior: 'smooth',
-  });
-}
+// async function renderMore() {
+//   refs.loadMore.classList.add('hidden');
+//   await renderPage();
+//   const { height: cardHeight } = document
+//     .querySelector('.gallery')
+//     .firstElementChild.getBoundingClientRect();
+//   window.scrollBy({
+//     top: cardHeight * 2,
+//     behavior: 'smooth',
+//   });
+// }
 function renderCard(card) {
   const {
     webformatURL,
