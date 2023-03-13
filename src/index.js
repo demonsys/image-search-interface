@@ -9,20 +9,19 @@ const refs = {
   endOfPage: document.querySelector('.endOfPage'),
 };
 const imagesApi = new ImagesApi();
+// Создаю элементы бесконечного скролла
 const observerCallback = entries => {
   entries.forEach(entry => {
-    console.log('start');
-    if (entry.isIntersecting) renderPage();
+    if (entry.isIntersecting && imagesApi.searchQuery !== '') renderPage();
   });
 };
-const options = {
-  rootMargin: '0px 0px 75px 0px',
-  threshold: 0,
-};
-const observer = new IntersectionObserver(observerCallback, options);
-
+const observer = new IntersectionObserver(observerCallback, {
+  rootMargin: '250px',
+});
 refs.searchForm.addEventListener('submit', onSearch);
+// делаю запрос на сервер и прогоняю полученные элементы через функцию вывода на html страницу
 const renderPage = async () => {
+  observer.unobserve(refs.endOfPage);
   try {
     const images = await imagesApi.fetchImages();
     if (imagesApi.totalHits === 0) {
@@ -30,46 +29,37 @@ const renderPage = async () => {
         'Sorry, there are no images matching your search query. Please try again.'
       );
     }
-    if (imagesApi.totalHits > 0 && imagesApi.page === 1) {
+    images.hits.map(renderCard);
+    if (imagesApi.totalHits > 0 && imagesApi.page === 1)
       Notify.info(`Hooray! We found ${imagesApi.totalHits} images.`);
-    }
-    if (imagesApi.totalHits > imagesApi.imagesPerPage) {
-    }
     if (
       imagesApi.totalHits <= imagesApi.page * imagesApi.imagesPerPage &&
       imagesApi.page !== 1
     ) {
-      Notify.info("We're sorry, but you've reached the end of search results.");
+      return Notify.info(
+        "We're sorry, but you've reached the end of search results."
+      );
     }
-    images.hits.map(renderCard);
-    return imagesApi.totalHits;
+    // Если результатов запроса больше, чем 1 страница, то включаем автоскролл
+    if (imagesApi.totalHits > imagesApi.imagesPerPage)
+      observer.observe(refs.endOfPage);
   } catch (error) {
     Notify.failure(error.message);
     console.log(error);
   }
 };
+//При нажатии кнопки поиска сбрасываем все предыдущие результаты и, если запрос не пустой, запускаем вывод новых рез-тов
 function onSearch(e) {
   e.preventDefault();
-  refs.gallery.innerHTML = '';
   imagesApi.resetPage();
+  refs.gallery.innerHTML = '';
   imagesApi.searchQuery = e.target.elements.searchQuery.value.trim();
   if (imagesApi.searchQuery === '') {
     return Notify.info('Please enter a search query');
   }
   renderPage();
-  observer.observe(refs.endOfPage);
 }
-// async function renderMore() {
-//   refs.loadMore.classList.add('hidden');
-//   await renderPage();
-//   const { height: cardHeight } = document
-//     .querySelector('.gallery')
-//     .firstElementChild.getBoundingClientRect();
-//   window.scrollBy({
-//     top: cardHeight * 2,
-//     behavior: 'smooth',
-//   });
-// }
+// Добавление на страницу одной карточки
 function renderCard(card) {
   const {
     webformatURL,
@@ -107,6 +97,7 @@ function renderCard(card) {
   refs.gallery.insertAdjacentHTML('beforeend', markup);
   gallery.refresh();
 }
+//Добавляю плагин для просмотра увеличенных изображений
 let gallery = new SimpleLightbox('.gallery a', {
   captionsData: 'alt',
   captionDelay: 250,

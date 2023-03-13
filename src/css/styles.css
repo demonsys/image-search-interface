@@ -7,8 +7,8 @@ body {
   padding: 0;
   margin: 0;
   text-align: center;
-  /* height: 100vh;
-  overflow-y: scroll; */
+  height: 100vh;
+  overflow-y: scroll;
 }
 a {
   text-decoration: none;
@@ -108,21 +108,3 @@ input:focus {
 .hidden {
   display: none;
 }
-.load-more {
-  border-radius: 20px;
-  margin-bottom: 150px;
-  background-color: white;
-  padding: 10px 20px;
-  border: 2px solid black;
-}
-.load-more:hover,
-.load-more:focus {
-  cursor: pointer;
-  transform: scale(1.03);
-}
-.load-more:active {
-  background-color: #03dd27;
-}
-/* .spinner.hidden {
-  display: none;
-} */
