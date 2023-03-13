@@ -7,6 +7,7 @@ const refs = {
   gallery: document.querySelector('.gallery'),
   searchQuery: document.querySelector('input[name="searchQuery"]'),
   endOfPage: document.querySelector('.endOfPage'),
+  searchBtn: document.querySelector('.searchBtn'),
 };
 const imagesApi = new ImagesApi();
 // Создаю элементы бесконечного скролла
@@ -43,6 +44,7 @@ const renderPage = async () => {
     // Если результатов запроса больше, чем 1 страница, то включаем автоскролл
     if (imagesApi.totalHits > imagesApi.imagesPerPage)
       observer.observe(refs.endOfPage);
+    if (imagesApi.page === 1) refs.searchBtn.classList.remove('spinner');
   } catch (error) {
     Notify.failure(error.message);
     console.log(error);
@@ -51,6 +53,7 @@ const renderPage = async () => {
 //При нажатии кнопки поиска сбрасываем все предыдущие результаты и, если запрос не пустой, запускаем вывод новых рез-тов
 function onSearch(e) {
   e.preventDefault();
+  refs.searchBtn.classList.add('spinner');
   imagesApi.resetPage();
   refs.gallery.innerHTML = '';
   imagesApi.searchQuery = e.target.elements.searchQuery.value.trim();
