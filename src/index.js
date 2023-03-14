@@ -24,13 +24,13 @@ refs.searchForm.addEventListener('submit', onSearch);
 const renderPage = async () => {
   observer.unobserve(refs.endOfPage);
   try {
-    const images = await imagesApi.fetchImages();
+    const cards = await imagesApi.fetchImages();
     if (imagesApi.totalHits === 0) {
       return Notify.info(
         'Sorry, there are no images matching your search query. Please try again.'
       );
     }
-    images.hits.map(renderCard);
+    renderAllCards(cards);
     if (imagesApi.totalHits > 0 && imagesApi.page === 1)
       Notify.info(`Hooray! We found ${imagesApi.totalHits} images.`);
     if (
@@ -44,26 +44,27 @@ const renderPage = async () => {
     // Если результатов запроса больше, чем 1 страница, то включаем автоскролл
     if (imagesApi.totalHits > imagesApi.imagesPerPage)
       observer.observe(refs.endOfPage);
-    if (imagesApi.page === 1) refs.searchBtn.classList.remove('spinner');
   } catch (error) {
     Notify.failure(error.message);
     console.log(error);
+  } finally {
+    if (imagesApi.page === 1) refs.searchBtn.classList.remove('spinner');
   }
 };
 //При нажатии кнопки поиска сбрасываем все предыдущие результаты и, если запрос не пустой, запускаем вывод новых рез-тов
 function onSearch(e) {
   e.preventDefault();
-  refs.searchBtn.classList.add('spinner');
   imagesApi.resetPage();
   refs.gallery.innerHTML = '';
   imagesApi.searchQuery = e.target.elements.searchQuery.value.trim();
   if (imagesApi.searchQuery === '') {
     return Notify.info('Please enter a search query');
   }
+  refs.searchBtn.classList.add('spinner');
   renderPage();
 }
 // Добавление на страницу одной карточки
-function renderCard(card) {
+function markupCard(card) {
   const {
     webformatURL,
     tags,
@@ -97,6 +98,10 @@ function renderCard(card) {
       </p>
     </div>
   </div>`;
+  return markup;
+}
+function renderAllCards(cards) {
+  const markup = cards.map(markupCard).join('');
   refs.gallery.insertAdjacentHTML('beforeend', markup);
   gallery.refresh();
 }

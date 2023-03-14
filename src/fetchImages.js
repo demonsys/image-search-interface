@@ -22,7 +22,7 @@ export default class ImagesApi {
       },
     });
     this.totalHits = response.data.totalHits;
-    return response.data;
+    return response.data.hits;
   }
   incrementPage() {
     this.page += 1;
