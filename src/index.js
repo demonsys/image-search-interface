@@ -77,7 +77,7 @@ function markupCard(card) {
   const markup = `
   <div class="photo-card">
   <a href='${largeImageURL}' class='photo-link'>
-    <img src="${webformatURL}$" alt="${tags}" loading="lazy"/>
+    <img src="${webformatURL}" alt="${tags}" loading="lazy"/>
     </a>
       <div class="info">
       <p class="info-item">
